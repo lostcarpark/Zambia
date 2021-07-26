@@ -89,6 +89,21 @@ function update_participant($badgeid) {
         }
     }
 
+    // Update ConReg member before Zambia member details.
+    $conn = new ConRegMember();
+    $conn->updateMember($badgeid, [
+      'first_name' => $_POST['fname'],
+      'last_name' => $_POST['lname'],
+      'badge_name' => $_POST['badgename'],
+      'phone' => $_POST['phone'],
+      'email' => $_POST['email'],
+      'street' => $_POST['postaddress1'],
+      'street2' => $_POST['postaddress2'],
+      'city' => $_POST['postcity'],
+      'county' => $_POST['poststate'],
+      'postcode' => $_POST['postzip'],
+    ]);
+
     $query2 = "REPLACE ParticipantHasCredential (badgeid, credentialid) VALUES ";
     $valuesClause2 = "";
     $query3 = "DELETE FROM ParticipantHasCredential WHERE badgeid = $badgeid AND credentialid in (";
@@ -111,6 +126,8 @@ function update_participant($badgeid) {
                 exit();
         }
     }
+
+
     if ($updateClause) {
         mysqli_query_with_error_handling(($query . mb_substr($updateClause, 0, -2) . $query_end), true, true);
         $ParticipantsUpdated = true;
@@ -141,21 +158,6 @@ function update_participant($badgeid) {
             Render500ErrorAjax($message_error);
             exit();
         }
-
-      // Update ConReg member before Zambia member details.
-      $conn = new ConRegMember();
-      $conn->updateMember($badgeid, [
-        'first_name' => $fname,
-        'last_name' => $lname,
-        'badge_name' => $badgename,
-        'phone' => $phone,
-        'email' => $email,
-        'street' => $postaddress1,
-        'street2' => $postaddress2,
-        'city' => $postcity,
-        'county' => $poststate,
-        'postcode' => $postzip,
-      ]);
 
 
         $query = <<<EOD
