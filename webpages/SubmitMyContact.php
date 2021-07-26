@@ -4,6 +4,8 @@ global $linki, $message_error, $returnAjaxErrors, $return500errors, $title;
 $title = "My Profile";
 require('PartCommonCode.php'); // initialize db; check login;
 //                                  set $badgeid from session
+require_once("ConRegMember.php");
+
 $returnAjaxErrors = true;
 $return500errors = true;
 function update_participant($badgeid) {
@@ -142,7 +144,7 @@ function update_participant($badgeid) {
 
       // Update ConReg member before Zambia member details.
       $conn = new ConRegMember();
-      $conn->updateMember('A0018', [
+      $conn->updateMember($badgeid, [
         'first_name' => $fname,
         'last_name' => $lname,
         'badge_name' => $badgename,
