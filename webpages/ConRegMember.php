@@ -36,7 +36,7 @@ class ConRegMember
   {
     $mid = $this->getMid($badgeId);
     if (!empty($mid)) {
-      $sql = "UPDATE conreg_members SET first_name=?, last_name=?, badge_name=?, phone=?, email=?, street=?, street2=?, city=?, county=?, postcode=? WHERE $mid=?";
+      $sql = "UPDATE conreg_members SET first_name=?, last_name=?, badge_name=?, phone=?, email=?, street=?, street2=?, city=?, county=?, postcode=? WHERE mid=?";
       $stmt = $this->connection->prepare($sql);
       $stmt->bind_param('ssssssssssi', $fields['first_name'], $fields['last_name'], $fields['badge_name'], $fields['phone'], $fields['email'], $fields['street'], $fields['street2'], $fields['city'], $fields['county'], $fields['postcode'], $mid);
       return $stmt->execute();
