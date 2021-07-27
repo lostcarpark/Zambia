@@ -1,5 +1,7 @@
 <?php
 
+require_once('db_functions.php');
+
 /***
  * Support user updates on ConReg conreg_members table.
  */
@@ -36,10 +38,22 @@ class ConRegMember
   {
     $mid = $this->getMid($badgeId);
     if (!empty($mid)) {
-      $sql = "UPDATE conreg_members SET first_name=?, last_name=?, badge_name=?, phone=?, email=?, street=?, street2=?, city=?, county=?, postcode=? WHERE mid=?";
-      $stmt = $this->connection->prepare($sql);
-      $stmt->bind_param('ssssssssssi', $fields['first_name'], $fields['last_name'], $fields['badge_name'], $fields['phone'], $fields['email'], $fields['street'], $fields['street2'], $fields['city'], $fields['county'], $fields['postcode'], $mid);
-      return $stmt->execute();
+
+      $query_preable = "UPDATE conreg_members SET ";
+      $query_portion_arr = [];
+      $query_param_arr = [];
+      $query_param_type_str = "";
+      foreach ($fields as $key=>$val) {
+        push_query_arrays($val, $key, 's', 100, $query_portion_arr, $query_param_arr, $query_param_type_str);
+      }
+      $query_param_arr[] = $mid;
+      $query_param_type_str .= 'i';
+      $query = $query_preable . implode(', ', $query_portion_arr) . " WHERE mid = ?";
+      $stmt = $this->connection->prepare($query);
+      $stmt->bind_param($query_param_type_str, ...$query_param_arr);
+      $result = $stmt->execute();
+      $stmt->close();
+      return $result;
     }
   }
 }

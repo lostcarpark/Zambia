@@ -105,20 +105,20 @@ function update_participant() {
             exit();
         }
 
-      // Update ConReg member before Zambia member details.
-      $conn = new ConRegMember();
-      $conn->updateMember($fbadgeid, [
-        'first_name' => $fname,
-        'last_name' => $lname,
-        'badge_name' => $badgename,
-        'phone' => $phone,
-        'email' => $email,
-        'street' => $postaddress1,
-        'street2' => $postaddress2,
-        'city' => $postcity,
-        'county' => $poststate,
-        'postcode' => $postzip,
-      ]);
+        // Update ConReg member before Zambia member details.
+        $conn = new ConRegMember();
+        $conn->updateMember($fbadgeid, [
+          'first_name' => $fname,
+          'last_name' => $lname,
+          'badge_name' => $badgename,
+          'phone' => $phone,
+          'email' => $email,
+          'street' => $postaddress1,
+          'street2' => $postaddress2,
+          'city' => $postcity,
+          'county' => $poststate,
+          'postcode' => $postzip,
+        ]);
 
 
         $query = <<<EOD
