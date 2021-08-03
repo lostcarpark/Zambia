@@ -399,7 +399,7 @@ var EditSurvey = function () {
         el.setAttribute('default-value', el.value);
         el.style.backgroundColor = null;
 
-        questionoptions = survey_options[curid];   //JSON.parse(row.getCell("options").getValue());
+        questionoptions = survey_options[curid];
 
         optiontable = null;
 
@@ -666,7 +666,6 @@ var EditSurvey = function () {
             },
             { title: "Min", field: "min_value", editor: "number", minWidth: 50, hozAlign: "right" },
             { title: "Max", field: "max_value", editor: "number", minWidth: 50, hozAlign: "right" },
-            { title: "Options", field: "options", width: 75, visible: true },
             {
                 title: "Delete", formatter: deleteicon, hozAlign: "center",
                 cellClick: function (e, cell) {
@@ -1146,19 +1145,7 @@ function RefreshPreview() {
         optionsjson = JSON.stringify(options);
         //console.log("optiontable:");
         //console.log(optionsjson);
-    }/* else if (questionoptions.length > 0) {
-        //console.log("from questionoptions");
-        var i;
-        for (i = 0; i < questionoptions.length; i++) {
-            questionoptions[i].questionid = questionid;
-        }
-        optionsjson = JSON.stringify(questionoptions);
-        //console.log("questionoptions:");
-        //console.log(optionsjson);
-    }*/
-    //console.log("options");
-    //console.log(options);
-    
+    }
     //console.log("questions");
     //console.log(surveyData);
     json = JSON.stringify(surveyData);
