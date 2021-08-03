@@ -10,6 +10,9 @@ function update_survey() {
     //error_log("\n\nin update surver:\n");
     //error_log("string loaded: " . getString("survey"));
     $questions = json_decode(base64_decode(getString("survey")));
+    // Survey Question Options are submitted as a JSON object with numeric IDs as properties. Convert to array so they can be referenced as PHP array indexes.
+    $questionOptions = (array) json_decode(base64_decode(getString("survey_options")));
+
     //var_error_log($questions);
     // reset display order to match new order and find which rows to delete
     $idsFound = "";
@@ -88,17 +91,18 @@ EOD;
             //var_error_log($paramarray);
             $inserted = $inserted + mysql_cmd_with_prepare($sql, "ssssiiiiiiiiii", $paramarray);
             $questionid = mysqli_insert_id($linki);
-            $options = [];
-            if (property_exists($quest, "options")) {
-                $optstring = base64_decode($quest->options);
-                $optstring = mb_substr($optstring, 7);
-                $options  = json_decode($optstring);
+            if (array_key_exists($id, $questionOptions)) {
+                $options = $questionOptions[$id];
+            }
+            else {
+                $options = [];
             }
             //error_log("\n\nOptions:\n");
             //error_log("\nsql='" . $optinssql . "'");
             //var_error_log($options);
             $optord = 1;
             $optdisplayorder = 10;
+            $useoptatob = FALSE;
             foreach ($options as $opt) {
                 if ($useoptatob) {
                     $optparamarray = array(
@@ -179,18 +183,12 @@ EOD;
             //error_log("\n\nupdate of " . $id . "\n" . $sql);
             //var_error_log($paramarray);
             $updated = $updated + mysql_cmd_with_prepare($sql, "ssssiiiiiiiiiii", $paramarray);
-            $options = [];
-            $useoptatob = true;
-            if (property_exists($quest, "options")) {
-                $optstring = $quest->options;
-                //error_log("\n\nquestion options = '" . $optstring . "'\n\n");
-                if (mb_strlen($optstring) > 3) {
-                    $optstring = base64_decode($optstring);
-                    //error_log("\n\ndecoded optstring = '" . $optstring . "'\n\n");
-                    $options  = json_decode($optstring);
-                    //error_log("\n\npost json decode\n");
-                    //var_error_log($options);
-                }
+            $useoptatob = FALSE;
+            if (array_key_exists($id, $questionOptions)) {
+                $options = $questionOptions[$id];
+            }
+            else {
+                $options = [];
             }
             $optdisplayorder = 10;
             $idsFound = "";

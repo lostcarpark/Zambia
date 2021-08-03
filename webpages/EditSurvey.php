@@ -93,9 +93,9 @@ EOD;
 	SELECT questionid, display_order, JSON_OBJECT(
 		'questionid', questionid,
         'ordinal', ordinal,
-        'value', TO_BASE64(value),
-		'optionshort', TO_BASE64(optionshort),
-		'optionhover', TO_BASE64(optionhover),
+        'value', value,
+		'optionshort', optionshort,
+		'optionhover', optionhover,
 		'allowothertext', allowothertext,
 		'display_order', display_order
 		) AS optionconfig
@@ -116,7 +116,7 @@ EOD;
 
         if ($qid != $cur_qid) {
             if ($cur_qid != "") {
-                echo $cur_qid . ': "' . base64_encode(mb_substr($cur_config, 0, -2) . "]") . '",' . "\n";
+                echo $cur_qid . ': ' . mb_substr($cur_config, 0, -2) . "],\n";
             }
             $cur_config = "[";
             $cur_qid = $qid;
@@ -125,7 +125,7 @@ EOD;
     }
     mysqli_free_result($result);
 	if ($rowcount > 0)
-		echo $cur_qid . ': "' . base64_encode(mb_substr($cur_config, 0, -2) . "]") . '"' . "\n";
+		echo $cur_qid . ': ' . mb_substr($cur_config, 0, -2) . "]\n";
 	echo "};\n</script>\n";
 
 	// start of display portion

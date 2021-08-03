@@ -32,7 +32,7 @@ var EditSurvey = function () {
         val = btoa(value);
         //console.log("becomes: " + val);
         return val;
-    };
+    }
 
     function editor_init() {
         //console.log("editor_init: tinyMCE.init('input#prompt')");
@@ -117,18 +117,25 @@ var EditSurvey = function () {
 
         if (curid == -99999) {
             curid = newid;
+            newid -= 1;
         }
         //console.log("add/update " + curid);
 
         if (opttable) {
-            options = opttable.getData();
-            for (i = 0; i < options.length; i++) {
-                options[i].questionid = curid;
-            }
-            option = btoa(JSON.stringify(options));
+            options = []; // opttable.getData();
+            opttable.rowManager.rows.forEach( function(row, index) {
+                options[index] = { questionid: curid, 
+                                   ordinal: row.data.ordinal,
+                                   value: row.data.value,
+                                   display_order: row.data.display_order,
+                                   optionshort: row.data.optionshort,
+                                   optionhover: row.data.optionhover,
+                                   allowothertext: row.data.allowothertext };
+            });
+            option = options;
             //console.log("-used opttable");
         } else if (questionoptions.length > 0) {
-            option = btoa(JSON.stringify(questionoptions));
+            option = questionoptions;
             //console.log("-used question options: " + questionoptions.length);
         } else {
             option = "";
@@ -140,10 +147,10 @@ var EditSurvey = function () {
         table.updateOrAddData([{
             questionid: curid, shortname: shortname, description: description, prompt: prompt, hover: hover,
             typeid: typeid, typename: typename, required: required, publish: publish, privacy_user: privacy_user,
-            searchable: searchable, ascending: ascending, display_only: display_only, min_value: minvalue, max_value: maxvalue, options: option
+            searchable: searchable, ascending: ascending, display_only: display_only, min_value: minvalue, max_value: maxvalue
            }, 
         ]);
-        newid = newid - 1;
+        survey_options[curid] = option;
         curid = -99999;
         questionoptions = [];
 
@@ -392,22 +399,9 @@ var EditSurvey = function () {
         el.setAttribute('default-value', el.value);
         el.style.backgroundColor = null;
 
-        options = row.getCell("options").getValue();
+        questionoptions = survey_options[curid];   //JSON.parse(row.getCell("options").getValue());
 
-        questionoptions = [];
-        if (options.length > 3)
-            options = atob(options);
-        if (options.length > 3)
-            questionoptions = JSON.parse(options);
         optiontable = null;
-
-        ////loop over options decoding every value, optionshortname and optionhover
-        //for (i = 0; i < questionoptions.length; i++) {
-        //    questionoptions[i].value = atob(questionoptions[i].value);
-        //    questionoptions[i].optionshort = atob(questionoptions[i].optionshort);
-        //    questionoptions[i].optionhover = atob(questionoptions[i].optionhover);
-        //}
-        //console.log(questionoptions);
 
         // now show the block
         document.getElementById("add-row").innerHTML = "Update Survey Table";
@@ -672,7 +666,7 @@ var EditSurvey = function () {
             },
             { title: "Min", field: "min_value", editor: "number", minWidth: 50, hozAlign: "right" },
             { title: "Max", field: "max_value", editor: "number", minWidth: 50, hozAlign: "right" },
-            { title: "Options", field: "options", width: 75, visible: false },
+            { title: "Options", field: "options", width: 75, visible: true },
             {
                 title: "Delete", formatter: deleteicon, hozAlign: "center",
                 cellClick: function (e, cell) {
@@ -720,7 +714,7 @@ var EditSurvey = function () {
             //console.log("question: " + option + " = ");
             //console.log(survey_options[option]);
             //console.log(atob(survey_options[option]));
-            configtable.updateOrAddData([{ questionid: option, options: survey_options[option] }]);
+            configtable.updateOrAddData([{ questionid: option, options: JSON.stringify(survey_options[option]) }]);
        };
        document.getElementById("submitbtn").innerHTML = "Save";
        document.getElementById("previewbtn").style.display = "block";
@@ -902,7 +896,7 @@ function saveComplete(data, textStatus, jqXHR) {
         configtable.replaceData(survey);
     }
 
-    if (data_json.hasOwnProperty("survey_options")) {
+/*    if (data_json.hasOwnProperty("survey_options")) {
         survey_options = data_json.survey_options;
         //console.log(survey_options);
 
@@ -911,7 +905,7 @@ function saveComplete(data, textStatus, jqXHR) {
             //console.log(survey_options[option]);
             configtable.updateOrAddData([{ questionid: option, options: survey_options[option] }]);
         };
-    }
+    }*/
 
     document.getElementById("previewbtn").style.display = "block";
     document.getElementById("redo").disabled = true;
@@ -949,7 +943,8 @@ function SaveSurvey() {
 
     var postdata = {
         ajax_request_action: "update_survey",
-        survey: btoa(JSON.stringify(configtable.getData()))
+        survey: btoa(JSON.stringify(configtable.getData())),
+        survey_options: btoa(JSON.stringify(survey_options))
     };
     $.ajax({
         url: "SubmitEditSurvey.php",
@@ -1157,7 +1152,7 @@ function RefreshPreview() {
         optionsjson = JSON.stringify(options);
         //console.log("optiontable:");
         //console.log(optionsjson);
-    } else if (questionoptions.length > 0) {
+    }/* else if (questionoptions.length > 0) {
         //console.log("from questionoptions");
         var i;
         for (i = 0; i < questionoptions.length; i++) {
@@ -1166,7 +1161,7 @@ function RefreshPreview() {
         optionsjson = JSON.stringify(questionoptions);
         //console.log("questionoptions:");
         //console.log(optionsjson);
-    }
+    }*/
     //console.log("options");
     //console.log(options);
     
@@ -1190,4 +1185,5 @@ function RefreshPreview() {
         error: RefreshError,
         type: "POST"
     });
+    optionsdirty = false;
 };
