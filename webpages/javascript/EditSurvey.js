@@ -896,16 +896,10 @@ function saveComplete(data, textStatus, jqXHR) {
         configtable.replaceData(survey);
     }
 
-/*    if (data_json.hasOwnProperty("survey_options")) {
+    if (data_json.hasOwnProperty("survey_options")) {
         survey_options = data_json.survey_options;
         //console.log(survey_options);
-
-        for (option in survey_options) {
-            //console.log(option);
-            //console.log(survey_options[option]);
-            configtable.updateOrAddData([{ questionid: option, options: survey_options[option] }]);
-        };
-    }*/
+    }
 
     document.getElementById("previewbtn").style.display = "block";
     document.getElementById("redo").disabled = true;
@@ -944,7 +938,7 @@ function SaveSurvey() {
     var postdata = {
         ajax_request_action: "update_survey",
         survey: btoa(JSON.stringify(configtable.getData())),
-        survey_options: btoa(JSON.stringify(survey_options))
+        survey_options: survey_options
     };
     $.ajax({
         url: "SubmitEditSurvey.php",
