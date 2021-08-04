@@ -123,7 +123,7 @@ var EditSurvey = function () {
 
         if (opttable) {
             options = []; // opttable.getData();
-            opttable.rowManager.rows.forEach( function(row, index) {
+            opttable.rowManager.rows.forEach(function (row, index) {
                 options[index] = { questionid: curid, 
                                    ordinal: row.data.ordinal,
                                    value: row.data.value,
@@ -399,7 +399,7 @@ var EditSurvey = function () {
         el.setAttribute('default-value', el.value);
         el.style.backgroundColor = null;
 
-        questionoptions = survey_options[curid];
+        questionoptions = (typeof(survey_options[curid]) === 'undefined' ? [] : survey_options[curid]);
 
         optiontable = null;
 
@@ -490,17 +490,11 @@ var EditSurvey = function () {
         document.getElementById("add-option-div").style.display = show_options ? 'block' : 'none';
         document.getElementById("optlegend-div").style.display = show_options ? 'block' : 'none';
         if (default_options) {
-            if ((questionoptions.length == 0) || colorchange) {
-                defaults = defaultOptions[typename];
-                defaultjson = atob(defaults);
-                //console.log(defaultjson);
-                try {
-                    questionoptions = JSON.parse(defaultjson);
-                    //console.log(questionoptions);
-                } catch (error) {
-                    console.log(error);
-                }
-                questionoptions.forEach(assign_questionid);
+            if (questionoptions.length == 0 || colorchange) {
+                questionoptions = defaultOptions[typename];
+                questionoptions.forEach(function (option) {
+                    option.questionid = curid;
+                });
                 //console.log("added default options");
             }
         }
@@ -571,10 +565,6 @@ var EditSurvey = function () {
                 },
             });
         }
-    }
-
-    function assign_questionid(option) {
-        option.questionid = curid;
     }
 
     function deleteicon(cell, formattParams, onRendered) {
@@ -1145,6 +1135,9 @@ function RefreshPreview() {
         optionsjson = JSON.stringify(options);
         //console.log("optiontable:");
         //console.log(optionsjson);
+    }
+    else if (questionoptions.length > 0) {
+        optionsjson = JSON.stringify(questionoptions);
     }
     //console.log("questions");
     //console.log(surveyData);
