@@ -100,7 +100,7 @@ function update_participant($badgeid) {
         $ccid = mb_substr($name, 13);
         switch ($value) {
             case "1":
-                $valuesClause2 .= ($valuesClause2 ? ", " : "") . "($badgeid, $ccid)";
+                $valuesClause2 .= ($valuesClause2 ? ", " : "") . "('$badgeid', $ccid)";
                 break;
             case "0":
                 $credentialClause3 .= ($credentialClause3 ? ", " : "") . $ccid;
