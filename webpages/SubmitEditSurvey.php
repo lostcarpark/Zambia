@@ -3,6 +3,7 @@
 global $returnAjaxErrors, $return500errors;
 $returnAjaxErrors = true;
 $return500errors = true;
+define("USEOPTATOB", FALSE);
 require_once('StaffCommonCode.php');
 
 function update_survey() {
@@ -10,6 +11,13 @@ function update_survey() {
     //error_log("\n\nin update surver:\n");
     //error_log("string loaded: " . getString("survey"));
     $questions = json_decode(base64_decode(getString("survey")));
+    // Survey Question Options are submitted as a JSON object with numeric IDs as properties. Convert to array so they can be referenced as PHP array indexes.
+    $questionOptions = $_POST["survey_options"];
+//$message = print_r($questionOptions, TRUE);
+//$message = print_r($_POST["survey_options"], TRUE);
+//fetch_survey($message);
+//return;
+
     //var_error_log($questions);
     // reset display order to match new order and find which rows to delete
     $idsFound = "";
@@ -88,11 +96,11 @@ EOD;
             //var_error_log($paramarray);
             $inserted = $inserted + mysql_cmd_with_prepare($sql, "ssssiiiiiiiiii", $paramarray);
             $questionid = mysqli_insert_id($linki);
-            $options = [];
-            if (property_exists($quest, "options")) {
-                $optstring = base64_decode($quest->options);
-                $optstring = mb_substr($optstring, 7);
-                $options  = json_decode($optstring);
+            if (array_key_exists($id, $questionOptions)) {
+                $options = $questionOptions[$id];
+            }
+            else {
+                $options = [];
             }
             //error_log("\n\nOptions:\n");
             //error_log("\nsql='" . $optinssql . "'");
@@ -100,23 +108,23 @@ EOD;
             $optord = 1;
             $optdisplayorder = 10;
             foreach ($options as $opt) {
-                if ($useoptatob) {
+                if (USEOPTATOB) {
                     $optparamarray = array(
                         $questionid, $optord,
-                        property_exists($opt, "value") ? base64_decode($opt->value) : "",
+                        array_key_exists("value", $opt) ? base64_decode($opt['value']) : "",
                         $optdisplayorder,
-                        property_exists($opt, "optionshort") ? base64_decode($opt->optionshort) : "",
-                        property_exists($opt, "optionhover") ? base64_decode($opt->optionhover) : "",
-                        property_exists($opt, "allowothertext") ? $opt->allowothertext : 0
+                        array_key_exists("optionshort", $opt) ? base64_decode($opt['optionshort']) : "",
+                        array_key_exists("optionhover", $opt) ? base64_decode($opt['optionhover']) : "",
+                        array_key_exists("allowothertext", $opt) ? $opt['allowothertext'] : 0
                     );
                 } else {
                     $optparamarray = array(
                         $questionid, $optord,
-                        property_exists($opt, "value") ? $opt->value : "",
+                        array_key_exists("value", $opt) ? $opt['value'] : "",
                         $optdisplayorder,
-                        property_exists($opt, "optionshort") ? $opt->optionshort : "",
-                        property_exists($opt, "optionhover") ? $opt->optionhover : "",
-                        property_exists($opt, "allowothertext") ? $opt->allowothertext : 0
+                        array_key_exists("optionshort", $opt) ? $opt['optionshort'] : "",
+                        array_key_exists("optionhover", $opt) ? $opt['optionhover'] : "",
+                        array_key_exists("allowothertext", $opt) ? $opt['allowothertext'] : 0
                     );
                 }
                 $optinserted = $optinserted + mysql_cmd_with_prepare($optinssql, "iisissi", $optparamarray);
@@ -179,28 +187,21 @@ EOD;
             //error_log("\n\nupdate of " . $id . "\n" . $sql);
             //var_error_log($paramarray);
             $updated = $updated + mysql_cmd_with_prepare($sql, "ssssiiiiiiiiiii", $paramarray);
-            $options = [];
-            $useoptatob = true;
-            if (property_exists($quest, "options")) {
-                $optstring = $quest->options;
-                //error_log("\n\nquestion options = '" . $optstring . "'\n\n");
-                if (mb_strlen($optstring) > 3) {
-                    $optstring = base64_decode($optstring);
-                    //error_log("\n\ndecoded optstring = '" . $optstring . "'\n\n");
-                    $options  = json_decode($optstring);
-                    //error_log("\n\npost json decode\n");
-                    //var_error_log($options);
-                }
+            if (array_key_exists($id, $questionOptions)) {
+                $options = $questionOptions[$id];
+            }
+            else {
+                $options = [];
             }
             $optdisplayorder = 10;
             $idsFound = "";
 
             // Delete options no longer needed
             foreach ($options as $opt) {
-                $opt->display_order = $optdisplayorder;
+                $opt['display_order'] = $optdisplayorder;
                 $optdisplayorder = $optdisplayorder + 10;
 
-                $ord = (int) $opt->ordinal;
+                $ord = (int) $opt['ordinal'];
                 if ($ord > 0) {
                     $idsFound = $idsFound . ',' . $ord;
                 }
@@ -230,24 +231,24 @@ EOD;
 
             // Update existing options
             foreach ($options as $opt) {
-                if ($opt->ordinal >= 0) {
-                    if ($useoptatob) {
+                if ($opt['ordinal'] >= 0) {
+                    if (USEOPTATOB) {
                         $paramarray = array(
-                            property_exists($opt, "value") ? base64_decode($opt->value) : "",
-                            $opt->display_order,
-                            property_exists($opt, "optionshort") ? base64_decode($opt->optionshort) : "",
-                            property_exists($opt, "optionhover") ? base64_decode($opt->optionhover) : "",
-                            property_exists($opt, "allowothertext") ? $opt->allowothertext : 0,
-                            $id, $opt->ordinal
+                            array_key_exists("value", $opt) ? base64_decode($opt['value']) : "",
+                            $optdisplayorder,
+                            array_key_exists("optionshort", $opt) ? base64_decode($opt['optionshort']) : "",
+                            array_key_exists("optionhover", $opt) ? base64_decode($opt['optionhover']) : "",
+                            array_key_exists("allowothertext", $opt) ? $opt['allowothertext'] : 0,
+                            $id, $opt['ordinal']
                         );
                     } else {
                         $paramarray = array(
-                            property_exists($opt, "value") ? $opt->value : "",
-                            $opt->display_order,
-                            property_exists($opt, "optionshort") ? $opt->optionshort : "",
-                            property_exists($opt, "optionhover") ? $opt->optionhover : "",
-                            property_exists($opt, "allowothertext") ? $opt->allowothertext : 0,
-                            $id, $opt->ordinal
+                            array_key_exists("value", $opt) ? $opt['value'] : "",
+                            $optdisplayorder,
+                            array_key_exists("optionshort", $opt) ? $opt['optionshort'] : "",
+                            array_key_exists("optionhover", $opt) ? $opt['optionhover'] : "",
+                            array_key_exists("allowothertext", $opt) ? $opt['allowothertext'] : 0,
+                            $id, $opt['ordinal']
                         );
                     }
                     //error_log("\n\n" . $optsql);
@@ -258,25 +259,25 @@ EOD;
 
             // Insert new options
             foreach ($options as $opt) {
-                if ($opt->ordinal < 0) {
-                    if ($useoptatob) {
+                if ($opt['ordinal'] < 0) {
+                    if (USEOPTATOB) {
                         $paramarray = array(
                             $id, $optord,
-                            property_exists($opt, "value") ? base64_decode($opt->value) : "",
-                            $opt->display_order,
-                            property_exists($opt, "optionshort") ? base64_decode($opt->optionshort) : "",
-                            property_exists($opt, "optionhover") ? base64_decode($opt->optionhover) : "",
-                            property_exists($opt, "allowothertext") ? $opt->allowothertext : 0
+                            array_key_exists("value", $opt) ? base64_decode($opt['value']) : "",
+                            $optdisplayorder,
+                            array_key_exists("optionshort", $opt) ? base64_decode($opt['optionshort']) : "",
+                            array_key_exists("optionhover", $opt) ? base64_decode($opt['optionhover']) : "",
+                            array_key_exists("allowothertext", $opt) ? $opt['allowothertext'] : 0
                             );
                     } else {
                         $paramarray = array(
-                           $id, $optord,
-                           property_exists($opt, "value") ? $opt->value : "",
-                           $opt->display_order,
-                           property_exists($opt, "optionshort") ? $opt->optionshort : "",
-                           property_exists($opt, "optionhover") ? $opt->optionhover : "",
-                           property_exists($opt, "allowothertext") ? $opt->allowothertext : 0
-                           );
+                            $id, $optord,
+                            array_key_exists("value", $opt) ? $opt['value'] : "",
+                            $optdisplayorder,
+                            array_key_exists("optionshort", $opt) ? $opt['optionshort'] : "",
+                            array_key_exists("optionhover", $opt) ? $opt['optionhover'] : "",
+                            array_key_exists("allowothertext", $opt) ? $opt['allowothertext'] : 0
+                            );
                     }
                     //error_log("\n\n" . $optinssql);
                     //var_error_log($paramarray);
@@ -356,42 +357,33 @@ EOD;
 	$json_return["survey"] = base64_encode($Config);
 
     $query = <<<EOD
-	SELECT questionid, display_order, JSON_OBJECT(
-		'questionid', questionid,
-        'ordinal', ordinal,
-        'value', TO_BASE64(value),
-		'optionshort', TO_BASE64(optionshort),
-		'optionhover', TO_BASE64(optionhover),
-		'allowothertext', allowothertext,
-		'display_order', display_order
-		) AS optionconfig
+	SELECT questionid, ordinal, value, optionshort, optionhover, allowothertext, display_order
 	FROM SurveyQuestionOptionConfig
 	GROUP BY questionid, ordinal
 	ORDER BY questionid, display_order;
 EOD;
-	$result = mysqli_query_exit_on_error($query);
+    $result = mysqli_query_exit_on_error($query);
 
-	$survey_options = array();
+    $survey_options = [];
     $cur_qid = "";
-    $cur_config = "[";
+    $cur_config = [];
 
     while ($row = mysqli_fetch_assoc($result)) {
         $qid = $row["questionid"];
-        $config = $row["optionconfig"];
 
         if ($qid != $cur_qid) {
             if ($cur_qid != "") {
-                $survey_options[$cur_qid] = base64_encode(mb_substr($cur_config, 0, -2) . "]");
+                $survey_options[$cur_qid] = $cur_config;
             }
-            $cur_config = "[";
+            $cur_config = [];
             $cur_qid = $qid;
         }
-        $cur_config = $cur_config . $config . ",\n";
+        $cur_config[] = $row;
     }
     mysqli_free_result($result);
 
-    $survey_options[$cur_qid] = base64_encode(mb_substr($cur_config, 0, -2) . "]");
-    $json_return["survey_options"] = $survey_options;
+    $survey_options[$cur_qid] = $cur_config;
+    $json_return["survey_options"] = (object)$survey_options;
 
     echo json_encode($json_return) . "\n";
 }
