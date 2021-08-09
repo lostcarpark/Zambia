@@ -602,15 +602,15 @@ var EditSurvey = function () {
                 },
             },
             {
-                title: "Description", field: "description", accessorData: escapeQuotesAccessor,
+                title: "Description", field: "description",
                 formatter: "textarea", visible: false
             },
             {
-                title: "Prompt", field: "prompt", accessorData: escapeQuotesAccessor, width: 180,
+                title: "Prompt", field: "prompt", width: 180,
                 editor: "input", editorParams: { editorAttributes: { maxlength: 512 } }
             },
             {
-                title: "Hover Text", field: "hover", accessorData: escapeQuotesAccessor, width: 180,
+                title: "Hover Text", field: "hover", width: 180,
                 editor: "input", editorParams: { editorAttributes: { maxlength: 8192 } }
             },
             { title: "Type", field: "typename", width: 140 },
@@ -874,14 +874,7 @@ function saveComplete(data, textStatus, jqXHR) {
         message = data_json.message;
 
     if (data_json.hasOwnProperty("survey")) {
-        survey = atob(data_json.survey);
-        //console.log("post atob");
-        //console.log(survey);
-        try {
-            survey = JSON.parse(survey);
-        } catch (error) {
-            console.log(error);
-        }
+        survey = data_json.survey;
         configtable.replaceData(survey);
     }
 
@@ -926,7 +919,7 @@ function SaveSurvey() {
 
     var postdata = {
         ajax_request_action: "update_survey",
-        survey: btoa(JSON.stringify(configtable.getData())),
+        survey: configtable.getData(),
         survey_options: survey_options
     };
     $.ajax({
