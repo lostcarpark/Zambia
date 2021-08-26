@@ -889,7 +889,13 @@ function retrieveParticipant($badgeid) {
     }
     $query = <<<EOD
 SELECT
-        pubsname, password, bestway, interested, bio, share_email
+        pubsname,
+        sortedpubsname,
+        password,
+        bestway,
+        interested,
+        bio,
+        share_email
     FROM
         Participants
     WHERE
