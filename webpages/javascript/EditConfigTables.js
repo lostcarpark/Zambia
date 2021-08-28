@@ -238,7 +238,7 @@ function opentable(tabledata) {
                 formatterParams: selectlist,
                 minWidth: 200,
                 formatterParams: formatlist,
-                minWidth: 200
+                minWidth: 200,
                 cellClick: tceEditorBlur
             });
         } else if (column.DATA_TYPE == 'int')
