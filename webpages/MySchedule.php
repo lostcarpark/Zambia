@@ -23,6 +23,7 @@ SELECT
             S.progguiddesc,
             TY.typename,
             DATE_FORMAT(ADDTIME('$CON_START_DATIM', SCH.starttime),'%a %l:%i %p') AS starttime,
+            DATE_FORMAT(ADDTIME('$CON_START_DATIM', ADDTIME(SCH.starttime, S.duration)),'%l:%i %p') AS endtime,
             left(S.duration, 5) AS duration,
             S.persppartinfo,
             S.notesforpart
@@ -40,7 +41,7 @@ SELECT
 EOD;
 $queryArr["participants"] = <<<EOD
 SELECT
-        POS.sessionid, CD.badgename, P.pubsname, 
+        P.badgeid, POS.sessionid, CD.badgename, P.pubsname, 
         IF (P.share_email=1, CD.email, NULL) AS email,
         POS.moderator, PSI.comments
     FROM
@@ -77,7 +78,9 @@ if (!$result = mysqli_query_with_error_handling($query)) {
 $row = mysqli_fetch_array($result, MYSQLI_NUM);
 mysqli_free_result($result);
 $poscount = $row[0];
+$registered = true;
 if (!$regmessage) {
+    $registered = false;
     if ($poscount >= 3) {
         $regmessage = "not registered.</span><span> " . fetchCustomText("enough_panels");
     } else {
@@ -85,20 +88,36 @@ if (!$regmessage) {
     }
 }
 participant_header($title, false, 'Normal', true);
+echo "<div class=\"container\">";
 echo "<div class=\"alert alert-primary mt-2\"><p>Below is the list of all the panels for which you are scheduled.  If you need any changes";
-echo " to this schedule please contact <a class=\"alert-link\" href=\"mailto:$PROGRAM_EMAIL\"> Programming </a>.</p>\n";
+echo " to this schedule please contact <a class=\"alert-link\" href=\"mailto:$PROGRAM_EMAIL\">Programming</a>.</p>\n";
 echo fetchCustomText("all_panelists_1");
 echo fetchCustomText("all_panelists_2");
-echo "<p>Your registration status is <span class=\"hilit\">$regmessage</span>\n";
-echo "<p>Thank you -- <a class=\"alert-link\" href=\"mailto:$PROGRAM_EMAIL\"> Programming </a></div>\n";
+echo "<p>Thank you &mdash; <a class=\"alert-link\" href=\"mailto:$PROGRAM_EMAIL\"> Programming </a></div>\n";
+
+if (!$registered) {
+
+    echo "<div class=\"alert alert-warning\">";
+    echo "You are not currently registered for " . CON_NAME . ".";
+    if ($poscount >= 3) {
+        echo fetchCustomText("enough_panels");
+    } else {
+        echo fetchCustomText("not_enough_panels");
+    }
+    echo "</div>";
+}
+
 ?>
+
+<div class="alert alert-primary">Please take a moment to confirm your panel assignments.</div>
 
 <div class="card">
     <div class="card-body">
 <?php
-RenderXSLT('my_schedule.xsl', array(), $resultXML);
+RenderXSLT('my_schedule.xsl', array( "badgeid" => $badgeid ), $resultXML);
 ?>
     </div>
+</div>
 </div>
 <?php
 participant_footer();
