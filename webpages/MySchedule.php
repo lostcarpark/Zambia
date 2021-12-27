@@ -41,7 +41,7 @@ SELECT
 EOD;
 $queryArr["participants"] = <<<EOD
 SELECT
-        P.badgeid, POS.sessionid, CD.badgename, P.pubsname, 
+        POS.participantonsessionid, P.badgeid, POS.sessionid, CD.badgename, P.pubsname, 
         IF (P.share_email=1, CD.email, NULL) AS email,
         POS.moderator, PSI.comments
     FROM
@@ -119,6 +119,9 @@ RenderXSLT('my_schedule.xsl', array( "badgeid" => $badgeid ), $resultXML);
     </div>
 </div>
 </div>
+<script type="text/javascript" src="javascript/zambiaExtension.js"></script>
+<script type="text/javascript" src="javascript/zambiaExtensionMySchedule.js"></script>
+
 <?php
 participant_footer();
 ?>

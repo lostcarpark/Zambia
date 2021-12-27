@@ -52,7 +52,7 @@
 
 	<xsl:template match="/doc/query[@queryName='participants']/row">
 		<div class="row mb-2 align-items-baseline">
-			<div class="col-md-3">
+			<div class="col-lg-3">
 				<xsl:if test="@moderator = '1'">
 					<b><xsl:text>Mod: </xsl:text></b>
 				</xsl:if>
@@ -62,15 +62,25 @@
 				</xsl:if>
 				<xsl:text> </xsl:text>
 			</div>
-			<div class="col-md-2">
+			<div class="col-lg-3">
 				<xsl:choose>
 					<xsl:when test="@badgeid = $badgeid">
 						<div class="form-group">
+							<xsl:element name="label">
+								<xsl:attribute name="class"><xsl:text>sr-only</xsl:text></xsl:attribute>
+								<xsl:attribute name="id"><xsl:text>select-pos-</xsl:text><xsl:value-of select="@participantonsessionid" /></xsl:attribute>
+								<xsl:text>Confirm Your Involvement</xsl:text>
+							</xsl:element>
 							<xsl:element name="select">
-								<xsl:attribute name="class"><xsl:text>form-control</xsl:text></xsl:attribute>
+								<xsl:attribute name="class"><xsl:text>form-control confirmation-select</xsl:text></xsl:attribute>
 								<xsl:attribute name="name"><xsl:text>availability</xsl:text></xsl:attribute>
 								<xsl:attribute name="data-sessionid"><xsl:value-of select="@sessionid" /></xsl:attribute>
-								<option>Unconfirmed</option>
+								<xsl:attribute name="data-participantonsessionid"><xsl:value-of select="@participantonsessionid" /></xsl:attribute>
+								<xsl:attribute name="id"><xsl:text>select-pos-</xsl:text><xsl:value-of select="@participantonsessionid" /></xsl:attribute>
+								<option value="">Please confirm...</option>
+								<option value="ACCEPTED">Yes, I'll be on the session</option>
+								<option value="DECLINED">No, this doesn't work</option>
+								<option value="MAYBE">Maybe</option>
 							</xsl:element>
 						</div>
 					</xsl:when>
@@ -79,7 +89,7 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</div>
-			<div class="col-md-3">
+			<div class="col-lg-3">
 				<xsl:choose>
 					<xsl:when test="@email != ''">
 						<xsl:element name="a">
@@ -92,7 +102,7 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</div>
-			<div class="col-md-4">
+			<div class="col-lg-3">
 				<xsl:value-of select="@comments" />
 			</div>
 		</div>
