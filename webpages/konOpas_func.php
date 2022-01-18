@@ -2,6 +2,9 @@
 //	Copyright (c) 2015-2019 Peter Olszowka. All rights reserved. See copyright document for more details.
     require_once('db_functions.php');
 	function retrieveKonOpasData() {
+	  //Get the site URL 
+    $url = 'https://zambia.octocon.com';
+
 		$results = array();
 		if (prepare_db_and_more() === false) {
 			$results["message_error"] = "Unable to connect to database.<br />No further execution possible.";
@@ -33,7 +36,7 @@ EOD;
 			}
 		$query = <<<EOD
 SELECT
-		S.sessionid AS id, S.title, TR.trackname, TY.typename, R.roomname AS loc,
+		S.sessionid AS id, S.title, S.meetinglink, TR.trackname, TY.typename, R.roomname AS loc,
 		DATE_FORMAT(duration, '%k') * 60 + DATE_FORMAT(duration, '%i') AS mins, S.progguiddesc AS `desc`, 
 		DATE_FORMAT(ADDTIME('$ConStartDatim',SCH.starttime),'%Y-%m-%d') as date,
 		DATE_FORMAT(ADDTIME('$ConStartDatim',SCH.starttime),'%H:%i') as time
@@ -59,13 +62,17 @@ EOD;
 				"time" => $row["time"],
 				"loc" => array($row["loc"]),
 				"people" => $sessionHasParticipant[$row["id"]],
-				"desc" => $row["desc"]
+				"desc" => $row["desc"],
+				"links" => [],
 				);
+			if (!empty($row["meetinglink"])) {
+				$programRow["links"] = ["meeting" => $row["meetinglink"]];
+			}
 			$program[] = $programRow;
 			}
 		$query = <<<EOD
 SELECT
-		P.badgeid, P.pubsname, P.bio
+		P.badgeid, P.pubsname, sortedpubsname, P.bio, P.approvedphotofilename, P.use_photo
 	FROM
 		Participants P
 	WHERE
@@ -77,17 +84,25 @@ SELECT
 				WHERE S.pubstatusid = 2 /* Public */
 			)
 EOD;
-		$result = mysqli_query_with_error_handling($query);
-		$people = array();
+    $result = mysqli_query_with_error_handling($query);
+		$people = [];
 		while($row = mysqli_fetch_assoc($result)) {
-			$peopleRow = array(
+			$peopleRow = [
 				"id" => $row["badgeid"],
 				"name" => array($row["pubsname"]),
+				"sortname" => $row["sortedpubsname"],
 				"prog" => $participantOnSession[$row["badgeid"]],
-				"bio" => $row["bio"]
-				);
+				"bio" => $row["bio"],
+				"links" => []
+			];
+			//if (PARTICIPANT_PHOTOS)
+			  if (!empty($row['approvedphotofilename'])) {
+			    $peopleRow['links']['img'] = ROOT_URL . PHOTO_PUBLIC_DIRECTORY . '/' . $row['approvedphotofilename'];
+			  }
+//print_r($peopleRow);
+			//}
 			$people[] = $peopleRow;
-			}
+		}
 		//header('Content-type: application/json');
 		$results["json"] = "var program = ".json_encode($program).";\n";
 		$results["json"] .= "var people = ".json_encode($people).";\n";
