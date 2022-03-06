@@ -60,6 +60,7 @@ EOD;
 				"tags" => array("track:".$row["trackname"],"type:".$row["typename"]),
 				"date" => $row["date"],
 				"time" => $row["time"],
+				"mins" => $row["mins"],
 				"loc" => array($row["loc"]),
 				"people" => $sessionHasParticipant[$row["id"]],
 				"desc" => $row["desc"],
