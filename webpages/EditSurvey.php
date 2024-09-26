@@ -39,52 +39,33 @@ EOD;
     mysqli_free_result($result);
 
     $default_options[$cur_shortname] = $cur_defaults;
-		echo '<script type="text/javascript">' . "\n";
+		echo "<script type=\"text/javascript\">\n";
     echo "var defaultOptions = " . json_encode($default_options) . ";\n";
 
 
 // json of current questions and question options
 	$paramArray = array();
 
-	$query=<<<EOD
-		SELECT JSON_OBJECT(
-			'questionid', d.questionid,
-			'shortname', d.shortname,
-			'description', d.description,
-			'prompt', prompt,
-			'hover', hover,
-			'display_order', d.display_order,
-			'typeid', d.typeid,
-			'typename', t.shortname,
-			'required', required,
-			'publish', publish,
-			'privacy_user', privacy_user,
-			'searchable', searchable,
-			'ascending', ascending,
-			'display_only', display_only,
-			'min_value', min_value,
-			'max_value', max_value,
-			'options', ""
-			) AS config
-		FROM SurveyQuestionConfig d
-		JOIN SurveyQuestionTypes t USING (typeid)
-		ORDER BY d.display_order ASC;
+    $query=<<<EOD
+        SELECT d.questionid, d.shortname, d.description, prompt, hover, d.display_order, d.typeid, t.shortname AS typename, required, publish, privacy_user, searchable, ascending, display_only, min_value, max_value
+        FROM SurveyQuestionConfig d
+        JOIN SurveyQuestionTypes t USING (typeid)
+        ORDER BY d.display_order ASC;
 EOD;
 
-	$result = mysqli_query_exit_on_error($query);
-	$Config = "var survey = [\n\t";
+    $result = mysqli_query_exit_on_error($query);
+    $Config = [];
     while ($row = mysqli_fetch_assoc($result)) {
-        $Config = $Config . "\t" . $row["config"] . ",\n";
+        $Config[] = $row;
     }
-	$Config = $Config . "\n];\n";
-	mysqli_free_result($result);
-	echo $Config;
+    mysqli_free_result($result);
+    echo "var survey = " . json_encode($Config) . ";\n";
 
     $query = <<<EOD
-	SELECT questionid, display_order, ordinal, value, optionshort, optionhover, allowothertext, display_order
-	FROM SurveyQuestionOptionConfig
-	GROUP BY questionid, ordinal
-	ORDER BY questionid, display_order;
+        SELECT questionid, display_order, ordinal, value, optionshort, optionhover, allowothertext, display_order
+        FROM SurveyQuestionOptionConfig
+        GROUP BY questionid, ordinal
+        ORDER BY questionid, display_order;
 EOD;
     $result = mysqli_query_exit_on_error($query);
 
